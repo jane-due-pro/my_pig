@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>部门选择</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-start: #f8faff;
+            --bg-end: #f0f3fa;
+            --card-bg: #ffffff;
+            --text-primary: #1a1d2e;
+            --text-secondary: #5a5f7a;
+            --text-muted: #8b8fa8;
+            --accent: #5b7fff;
+            --accent-soft: #eef1ff;
+            --accent-glow: rgba(91, 127, 255, 0.12);
+            --border: #e8ecf4;
+            --border-focus: #5b7fff;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 16px rgba(30, 40, 80, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04);
+            --shadow-lg: 0 12px 36px rgba(30, 40, 80, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
+            --shadow-xl: 0 20px 50px rgba(30, 40, 80, 0.1), 0 8px 20px rgba(0, 0, 0, 0.05);
+            --radius-sm: 10px;
+            --radius: 16px;
+            --radius-lg: 20px;
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(170deg, #f8faff 0%, #f0f3fa 30%, #f5f4fb 60%, #faf7fb 100%);
+            background-attachment: fixed;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* ---- 背景装饰光晕 ---- */
+        .bg-orb {
+            position: fixed;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            filter: blur(90px);
+            opacity: 0.45;
+            will-change: transform;
+        }
+        .bg-orb--1 {
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, rgba(91, 127, 255, 0.22) 0%, transparent 70%);
+            top: -100px;
+            right: -90px;
+            animation: orbFloat1 16s ease-in-out infinite;
+        }
+        .bg-orb--2 {
+            width: 280px;
+            height: 280px;
+            background: radial-gradient(circle, rgba(168, 130, 255, 0.18) 0%, transparent 70%);
+            bottom: -80px;
+            left: -70px;
+            animation: orbFloat2 19s ease-in-out infinite;
+        }
+        .bg-orb--3 {
+            width: 180px;
+            height: 180px;
+            background: radial-gradient(circle, rgba(255, 167, 120, 0.15) 0%, transparent 70%);
+            top: 45%;
+            left: 55%;
+            animation: orbFloat3 14s ease-in-out infinite;
+        }
+
+        @keyframes orbFloat1 {
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+            30% {
+                transform: translate(-50px, 35px) scale(1.18);
+            }
+            60% {
+                transform: translate(-20px, -25px) scale(0.88);
+            }
+            85% {
+                transform: translate(40px, -15px) scale(1.1);
+            }
+        }
+        @keyframes orbFloat2 {
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+            35% {
+                transform: translate(40px, -45px) scale(1.22);
+            }
+            65% {
+                transform: translate(-25px, 25px) scale(0.82);
+            }
+            90% {
+                transform: translate(-15px, -10px) scale(1.06);
+            }
+        }
+        @keyframes orbFloat3 {
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+            40% {
+                transform: translate(-30px, -40px) scale(1.28);
+            }
+            70% {
+                transform: translate(25px, 20px) scale(0.78);
+            }
+        }
+
+        /* ---- 主容器 ---- */
+        .main-wrapper {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 520px;
+        }
+
+        /* ---- 欢迎卡片 ---- */
+        .welcome-card {
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            padding: 32px 34px 28px;
+            box-shadow: var(--shadow-xl);
+            position: relative;
+            overflow: hidden;
+            transition: box-shadow 0.4s ease;
+        }
+        .welcome-card:hover {
+            box-shadow: 0 24px 56px rgba(30, 40, 80, 0.12), 0 10px 24px rgba(0, 0, 0, 0.06);
+        }
+
+        /* 顶部彩色条 */
+        .welcome-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #5b7fff 0%, #8b5cf6 35%, #ec6b8c 70%, #ffa778 100%);
+            border-radius: 20px 20px 0 0;
+        }
+
+        /* ---- 头部区域 ---- */
+        .header-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 6px;
+        }
+        .avatar-ring {
+            flex-shrink: 0;
+            width: 50px;
+            height: 50px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #eef2ff 0%, #ede4ff 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .avatar-ring svg {
+            width: 26px;
+            height: 26px;
+            color: #5b7fff;
+        }
+        /* 在线状态点 */
+        .avatar-ring::after {
+            content: '';
+            position: absolute;
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+            background: #22c55e;
+            bottom: -2px;
+            right: -2px;
+            border: 3px solid #fff;
+            box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5);
+            animation: statusPulse 2.2s ease-in-out infinite;
+        }
+        @keyframes statusPulse {
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.45);
+            }
+            50% {
+                box-shadow: 0 0 0 10px rgba(34, 197, 94, 0);
+            }
+        }
+
+        .greeting-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .greeting-label {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+        .greeting-name {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.2px;
+            line-height: 1.2;
+        }
+        .greeting-name span {
+            background: linear-gradient(135deg, #5b7fff 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* ---- 时间显示 ---- */
+        .time-display {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            margin-bottom: 6px;
+            padding: 8px 16px;
+            background: #f8fafd;
+            border-radius: 20px;
+            border: 1px solid #eef1f7;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            letter-spacing: 0.2px;
+            transition: all var(--transition);
+        }
+        .time-display:hover {
+            background: #f2f5fc;
+            border-color: #dfe4f0;
+        }
+        .time-icon {
+            display: flex;
+            align-items: center;
+            color: #5b7fff;
+        }
+        .time-icon svg {
+            width: 16px;
+            height: 16px;
+        }
+        .time-text {
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: "tnum";
+        }
+
+        /* ---- 分隔线 ---- */
+        .divider {
+            margin: 18px 0 22px;
+            border: none;
+            height: 1px;
+            background: linear-gradient(90deg, transparent 0%, #e4e9f5 15%, #e4e9f5 85%, transparent 100%);
+        }
+
+        /* ---- 选择区域 ---- */
+        .select-section {
+            position: relative;
+        }
+        .select-label {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            letter-spacing: 0.2px;
+        }
+        .select-label svg {
+            width: 16px;
+            height: 16px;
+            color: #5b7fff;
+        }
+
+        /* 自定义下拉框容器 */
+        .custom-select-wrap {
+            position: relative;
+        }
+        .custom-select-wrap select {
+            width: 100%;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            padding: 15px 50px 15px 18px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            font-weight: 500;
+            color: var(--text-primary);
+            background: #f8fafd;
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            cursor: pointer;
+            outline: none;
+            transition: all var(--transition);
+            letter-spacing: 0.2px;
+            line-height: 1.4;
+            background-image: none;
+        }
+        .custom-select-wrap select:hover {
+            border-color: #cdd4e6;
+            background: #f4f7fd;
+        }
+        .custom-select-wrap select:focus {
+            border-color: var(--border-focus);
+            background: #ffffff;
+            box-shadow: 0 0 0 6px var(--accent-glow), 0 2px 8px rgba(91, 127, 255, 0.08);
+        }
+        /* 下拉箭头 */
+        .select-arrow {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            z-index: 2;
+            transition: transform 0.3s ease;
+            display: flex;
+            align-items: center;
+            color: #8b8fa8;
+        }
+        .custom-select-wrap select:focus~.select-arrow {
+            transform: translateY(-50%) rotate(180deg);
+            color: #5b7fff;
+        }
+        .select-arrow svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* 选中后的提示小标签 */
+        .select-hint {
+            margin-top: 10px;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            letter-spacing: 0.15px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            min-height: 20px;
+            transition: color 0.3s;
+        }
+        .select-hint .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #5b7fff;
+            flex-shrink: 0;
+        }
+
+        /* ---- 底部操作区 ---- */
+        .action-row {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 22px;
+            gap: 10px;
+        }
+        .btn-confirm {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 26px;
+            font-size: 0.92rem;
+            font-weight: 600;
+            font-family: inherit;
+            letter-spacing: 0.3px;
+            color: #ffffff;
+            background: #4f6ef7;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all var(--transition);
+            box-shadow: 0 6px 18px rgba(79, 110, 247, 0.28), 0 2px 4px rgba(79, 110, 247, 0.1);
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+        }
+        .btn-confirm:hover {
+            background: #3d5ce5;
+            box-shadow: 0 10px 26px rgba(79, 110, 247, 0.38), 0 4px 8px rgba(79, 110, 247, 0.15);
+            transform: translateY(-2px);
+        }
+        .btn-confirm:active {
+            background: #3450d1;
+            box-shadow: 0 3px 8px rgba(79, 110, 247, 0.22);
+            transform: translateY(1px);
+            transition: all 0.1s ease;
+        }
+        .btn-confirm svg {
+            width: 16px;
+            height: 16px;
+        }
+        /* 光泽扫过 */
+        .btn-confirm::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -55%;
+            width: 35%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22), transparent);
+            transform: skewX(-18deg);
+            transition: left 0.55s ease;
+        }
+        .btn-confirm:hover::after {
+            left: 120%;
+        }
+
+        /* ---- 响应式 ---- */
+        @media (max-width: 540px) {
+            .welcome-card {
+                padding: 24px 20px 22px;
+                border-radius: var(--radius);
+            }
+            .welcome-card::before {
+                border-radius: 16px 16px 0 0;
+            }
+            .header-section {
+                gap: 12px;
+            }
+            .avatar-ring {
+                width: 42px;
+                height: 42px;
+                border-radius: 12px;
+            }
+            .avatar-ring svg {
+                width: 22px;
+                height: 22px;
+            }
+            .greeting-name {
+                font-size: 1.15rem;
+            }
+            .time-display {
+                font-size: 0.78rem;
+                padding: 7px 12px;
+                gap: 6px;
+            }
+            .custom-select-wrap select {
+                padding: 13px 44px 13px 14px;
+                font-size: 0.88rem;
+                border-radius: 12px;
+            }
+            .btn-confirm {
+                padding: 11px 20px;
+                font-size: 0.85rem;
+                border-radius: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- 背景装饰光晕 -->
+<div class="bg-orb bg-orb--1"></div>
+<div class="bg-orb bg-orb--2"></div>
+<div class="bg-orb bg-orb--3"></div>
+
+<!-- 主容器 -->
+<div class="main-wrapper">
+    <div class="welcome-card">
+        <!-- 头部：头像 + 欢迎信息 -->
+        <div class="header-section">
+            <div class="avatar-ring">
+                <!-- 用户图标 -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+            </div>
+            <div class="greeting-info">
+                <span class="greeting-label">欢迎登录</span>
+                <span class="greeting-name">
+                        <span th:text="${name}">用户名</span>
+                    </span>
+            </div>
+        </div>
+
+        <!-- 当前时间 -->
+        <div class="time-display">
+                <span class="time-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                </span>
+            <span class="time-text" th:text="${#dates.format(today, 'yyyy年MM月dd日 HH:mm:ss')}">2025年01月01日 12:00:00</span>
+        </div>
+
+        <!-- 分隔线 -->
+        <hr class="divider" />
+
+        <!-- 部门选择区域 -->
+        <div class="select-section">
+            <label class="select-label" for="deptSelect">
+                <!-- 部门图标 -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 21h18"/>
+                    <path d="M5 21V7l8-4v18"/>
+                    <path d="M19 21V11l-6-4"/>
+                    <path d="M9 9v.01"/>
+                    <path d="M9 12v.01"/>
+                    <path d="M9 15v.01"/>
+                    <path d="M9 18v.01"/>
+                </svg>
+                请选择部门
+            </label>
+
+            <!-- 自定义下拉框 -->
+            <div class="custom-select-wrap">
+                <select id="deptSelect">
+                    <option value="">— 请选择一个部门 —</option>
+                    <option th:each="dept : ${depts}" th:value="${dept.id}">[[${dept.name}]]</option>
+                </select>
+                <span class="select-arrow">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </span>
+            </div>
+
+            <!-- 选择提示 -->
+            <div class="select-hint">
+                <span class="dot"></span>
+                <span>选择部门后即可进入系统</span>
+            </div>
+        </div>
+
+        <!-- 确认按钮 -->
+        <div class="action-row">
+            <button type="button" class="btn-confirm" onclick="handleConfirm()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"/>
+                </svg>
+                进入系统
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 简单的交互脚本：点击按钮时获取选中的部门 -->
+<script>
+    function handleConfirm() {
+        const selectEl = document.getElementById('deptSelect');
+        const selectedValue = selectEl.value;
+        const selectedText = selectEl.options[selectEl.selectedIndex]?.text || '';
+
+        if (!selectedValue) {
+            // 如果未选择部门，给出视觉提示
+            selectEl.style.borderColor = '#ef4444';
+            selectEl.style.boxShadow = '0 0 0 6px rgba(239,68,68,0.1)';
+            selectEl.focus();
+            // 3秒后恢复
+            setTimeout(() => {
+                selectEl.style.borderColor = '';
+                selectEl.style.boxShadow = '';
+            }, 2500);
+
+            // 更新提示文字
+            const hintEl = document.querySelector('.select-hint span:last-child');
+            if (hintEl) {
+                hintEl.textContent = '请先选择一个部门';
+                hintEl.style.color = '#ef4444';
+                setTimeout(() => {
+                    hintEl.textContent = '选择部门后即可进入系统';
+                    hintEl.style.color = '';
+                }, 2500);
+            }
+            return;
+        }
+
+        // 这里可以添加实际的跳转或提交逻辑
+        console.log('选中部门ID:', selectedValue, '部门名称:', selectedText);
+        alert('即将进入部门：' + selectedText);
+
+        // 示例：如果需要跳转，可以取消下面注释
+        // window.location.href = '/dashboard?deptId=' + selectedValue;
+    }
+</script>
+</body>
+</html>

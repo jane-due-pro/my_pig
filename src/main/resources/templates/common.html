@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <div th:fragment="foot(year, company)" style="text-align:center; margin-top:30px; padding:15px; border-top:1px solid #ccc;">
+        <p>&copy; <span th:text="${year}"></span> <span th:text="${company}"></span>. 版权所有。</p>
+    </div>
+</body>
+</html>
