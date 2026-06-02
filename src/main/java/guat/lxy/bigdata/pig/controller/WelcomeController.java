@@ -29,11 +29,11 @@ public class WelcomeController {
     private VerificationCodeService codeService;
     @PostMapping("/doLogin")
     public String doLogin(@ModelAttribute("loginuser") LoginUser loginuser, Model model) {
-        if (!Objects.equals(loginUserMapper.getPasswordWithLoginUser(loginuser.getUserName()), loginuser.getPassword())) {
+        if (!Objects.equals(loginUserMapper.getPasswordWithLoginUser(loginuser.getName()), loginuser.getPassword())) {
             model.addAttribute("errorMsg", "用户名或密码错误！");
             return "login";
         }
-        model.addAttribute("name",loginuser.getUserName());
+        model.addAttribute("name",loginuser.getName());
         model.addAttribute("today",new Date());
         List<Dept> depts = new ArrayList<>();
         depts.add(new Dept(1, "研发部"));
@@ -76,4 +76,8 @@ public class WelcomeController {
         model.addAttribute("depts", depts);
         return "Welcome";
     }
+//    @GetMapping("/")
+//    public String reToLogin(){
+//        return "redirect:/login";
+//    }
 }
