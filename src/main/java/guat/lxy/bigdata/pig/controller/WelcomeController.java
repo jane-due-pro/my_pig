@@ -76,8 +76,8 @@ public class WelcomeController {
         model.addAttribute("depts", depts);
         return "Welcome";
     }
-//    @GetMapping("/")
-//    public String reToLogin(){
-//        return "redirect:/login";
-//    }
+    @GetMapping("/")
+    public String reToLogin(){
+        return "redirect:/login";
+    }
 }
